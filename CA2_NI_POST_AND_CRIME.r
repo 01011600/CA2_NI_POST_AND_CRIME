@@ -36,11 +36,18 @@ NIPostcodes <- NIPostcodes[,c("Primary Key","Organisation Name", "Sub-building N
                               "y-coordinates")]
 colnames(NIPostcodes)
 str(NIPostcodes)
-
+Limavady_data
 Limavady_data<-NIPostcodes[grepl("LIMAVADY",NIPostcodes$Locality) & 
                            grepl("LIMAVADY",NIPostcodes$Townland) & 
                            grepl("LIMAVADY",NIPostcodes$Town),]
 
-Limavady_data2<-NIPostcodes[grepl("LIMAVADY",NIPostcodes$Locality) | 
-                             grepl("LIMAVADY",NIPostcodes$Townland) | 
-                             grepl("LIMAVADY",NIPostcodes$Town),]
+# Write Limavady data to CSV file
+write.csv(Limavady_data, file = "Limavady_data.csv")
+head(NIPostcodes, 4)
+
+CleanNIPostcodeData <- NIPostcodes
+
+str(CleanNIPostcodeData)
+# Write the NIPostcodes data to CSV file called CleanNIPostcodeData
+
+write.csv(NIPostcodes, file = "CleanNIPostcodeData.csv")
