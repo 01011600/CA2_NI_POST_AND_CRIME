@@ -27,48 +27,41 @@ AllNICrimeData[AllNICrimeData$Location == "", c("Location")] <- NA
 str(AllNICrimeData)
 
 # Creating a dataframe called AllNICrimeData_noNA which has the NA's removed
-AllNICrimeData_noNA <- AllNICrimeData[which(!is.na(AllNICrimeData$Location)),]
+#AllNICrimeData_noNA <- AllNICrimeData[which(!is.na(AllNICrimeData$Location)),]
+AllNICrimeData_noNA<-na.omit(AllNICrimeData)
 # Choose a random sample of 1000 entries from the AllNICrimeData_noNA dataframe
-random_crime_sample<-AllNICrimeData_noNA[c(as.integer(runif(1000,1,nrow(AllNICrimeData_noNA)))),]
+random_crime_sample_no_PC<-AllNICrimeData_noNA[c(as.integer(runif(1000,1,nrow(AllNICrimeData_noNA)))),]
 
 find_a_postcode <- function(without_postcode){
 library(doBy)
 CleanNIPostcodeData<-read.csv("CleanNIPostcodeData.csv")[c("Primary.Thorfare","Postcode")]
-CleanNIPostcodeData$test<-paste0(CleanNIPostcodeData$Primary.Thorfare," | ",CleanNIPostcodeData$Postcode)
 
-# Summarize (Count number of rows (Postcodes) groupped by Primary.Thorfare)
-DF<-summaryBy(data = CleanNIPostcodeData, Primary.Thorfare ~ Primary.Thorfare+Postcode,FUN=length)
-# getting rid of rows with NAs
-DF<-na.omit(DF)
+# Summary of the postcode data grouped by Primary.Thorfare to get the most popular postcode
+Postcode_Summary <- summaryBy(data = CleanNIPostcodeData, Primary.Thorfare ~ Primary.Thorfare+Postcode,FUN=length)
+# Remove all the rows with NA's
+Postcode_Summary<-na.omit(DF)
 
-# NEW_DF<-DF[1,]
+#NEW_DF<-Postcode_Summary[,]
+
 #Getting the maximum value for each location giving us the most popular postcode
+Most_Freq_Address_by_Postcode<-summaryBy(Primary.Thorfare.length ~ Primary.Thorfare, data = DF,FUN = max)
+Most_Freq_Address_by_Postcode$Postcode<-""
 
-NEW_DF<-summaryBy(Primary.Thorfare.length ~ Primary.Thorfare, data = DF,FUN = max)
-names(NEW_DF)[2]<-"Primary.Thorfare.length"
+for (i in 1:nrow(Most_Freq_Address_by_Postcode)){
+  temp_Primary.Thorfare<-as.character(Most_Freq_Address_by_Postcode[i,c("Primary.Thorfare")])
+  temp_Primary.Thorfare.length.max<-as.character(Most_Freq_Address_by_Postcode[i,c("Primary.Thorfare.length.max")])
+  temp_Postcode<-as.character(DF[which(DF$Primary.Thorfare==temp_Primary.Thorfare &
+                            DF$Primary.Thorfare.length==temp_Primary.Thorfare.length.max),c("Postcode")])
+  Most_Freq_Address_by_Postcode[i,c("Postcode")]<-temp_Postcode[1]
+  
+  print(paste0((i/nrow(NEW_DF)*100),"%"))
+  
+}
 
-NEW_NEW_DF<-merge(NEW_DF,DF,all.x = TRUE,all.y = FALSE)
+random_crime_sample_no_PC$Location<-toupper(random_crime_sample$Location)
 
-
-
-
-#NEW_DFDF<-merge(DF,NEW_DF,all.x=FALSE, all.y = TRUE, by.x=c("Primary.Thorfare","Primary.Thorfare.length"),
-#                by.y = c("Primary.Thorfare","Primary.Thorfare.length.max"))
-
-
-
-# NEW_DF<-""
-# for (i in 1: length(unique(DF$Primary.Thorfare))){
-#   
-#   TEMP_NEW_DF<-DF[1,]
-#   TEMP_NEW_DF<-""
-#   
-#   TEMP_NEW_DF<-arrange(DF[which(DF$Primary.Thorfare==as.character(unique(DF$Primary.Thorfare)[i])),],desc(Primary.Thorfare.length))[1,]
-#   
-#   NEW_DF<-rbind(NEW_DF,TEMP_NEW_DF)
-#   
-#   
-# }
+random_crime_sample <- merge(random_crime_sample,NEW_DF,by.x = c("Location"),by.y = c("Primary.Thorfare"),
+              all.x = TRUE)
 
 
 
