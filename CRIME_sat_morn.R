@@ -33,23 +33,21 @@ AllNICrimeData_noNA <- na.omit(AllNICrimeData)
 random_crime_sample_no_PC <- AllNICrimeData_noNA[c(as.integer(runif(1000,1,nrow(AllNICrimeData_noNA)))),]
 
 # Your input is "random_crime_sample_no_PC"
-find_a_postcode <- function(without_postcode){
+find_a_postcode <- function(random_crime_sample_no_PC){
 library(doBy)
-#CleanNIPostcodeData<-read.csv("CleanNIPostcodeData.csv")[c("Primary.Thorfare","Postcode")]
-CleanNIPostcodeData<-read.csv("CleanNIPostcodeData.csv")
+# Read in CleanNIPostcodeData csv file and populate the dataframe CleanNIPostcodeData
+CleanNIPostcodeData <- read.csv("CleanNIPostcodeData.csv")
 # Summary of the postcode data grouped by Primary.Thorfare to get the most popular postcode
 Postcode_Summary <- summaryBy(data = CleanNIPostcodeData, Primary.Thorfare ~ Primary.Thorfare+Postcode,FUN=length)
 # Remove all the rows with NA's
-Postcode_Summary<-na.omit(Postcode_Summary)
-
-#NEW_DF<-Postcode_Summary[,1]
+Postcode_Summary <- na.omit(Postcode_Summary)
 
 #Getting the maximum value for each location giving us the most popular postcode
 Most_Freq_Address_by_Postcode<-summaryBy(Primary.Thorfare.length ~ Primary.Thorfare, data = Postcode_Summary,FUN = max)
 Most_Freq_Address_by_Postcode$Postcode<-""
-
+# Create a for loop 
 for (i in 1:nrow(Most_Freq_Address_by_Postcode)){
-  temp_Primary.Thorfare<-as.character(Most_Freq_Address_by_Postcode[i,c("Primary.Thorfare")])
+  temp_Primary.Thorfare <- as.character(Most_Freq_Address_by_Postcode[i,c("Primary.Thorfare")])
   temp_Primary.Thorfare.length.max<-as.character(Most_Freq_Address_by_Postcode[i,c("Primary.Thorfare.length.max")])
   temp_Postcode<-as.character(Postcode_Summary[which(Postcode_Summary$Primary.Thorfare==temp_Primary.Thorfare &
                         Postcode_Summary$Primary.Thorfare.length==temp_Primary.Thorfare.length.max),c("Postcode")])
@@ -63,12 +61,11 @@ return(Most_Freq_Address_by_Postcode)
 }
 
 
-#Calling function and applying on "random_crime_sample_no_PC"
-Most_Freq_Address_by_Postcode<-find_a_postcode(random_crime_sample_no_PC)
-
-
-random_crime_sample_no_PC$Location<-toupper(random_crime_sample_no_PC$Location)
-
+#Calling function find_a_postcode passing in "random_crime_sample_no_PC"
+Most_Freq_Address_by_Postcode <- find_a_postcode(random_crime_sample_no_PC)
+# Change all the location in random crime sample s to upper case so it can be merged
+random_crime_sample_no_PC$Location <- toupper(random_crime_sample_no_PC$Location)
+# Join the two dataframes together by Location and Primary Thorfare so that the random crime sample contains a postcode
 random_crime_sample <- merge(random_crime_sample_no_PC,Most_Freq_Address_by_Postcode,by.x = c("Location"),by.y = c("Primary.Thorfare"),
                              all.x = TRUE)
 random_crime_sample
